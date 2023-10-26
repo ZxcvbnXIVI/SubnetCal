@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <style>
+
+        h1 {
+            color: white;
+            background-color: rgb(0, 0, 0);
+            text-align: center;
+        }
+
+        h2 {
+            color: rgb(3, 32, 90);
+        }
+
+        body {
+            padding-left: 20px;
+            width: 50%;
+            background-color: rgb(173, 173, 173);
+        }
+
+        table {
+            border-collapse: collapse;
+            border: 1px solid rgb(12, 12, 12);
+        }
+
+        td,
+        th {
+            border-collapse: collapse;
+            border: 1px solid rgb(8, 8, 8);
+        }
+
+        #tg {
+            background-color: rgb(234, 234, 234);
+        }
+
+        #tw {
+            background-color: white;
+        }
+
+        #btnBack {
+            background-color: rgb(255, 17, 0);
+            color: white;
+            border: none;
+            color: white;
+            padding: 10px 25px;
+            margin: 10px 0px
+        }
+
+        fieldset {
+            width: 70%;
+            height: 100%;
+            border: 0px;
+        }
+    </style>
+    <title id="titleid">IP Subnet Calculator</title>
+    <script>
+        var stringClass = "";
+        var rangePossible = 0;
+        var textSummary = "";
+        var networkAddressSub = [];
+        var increase = 0;
+        var boardcastAddressSub = [];
+        function cal() {
+            var output = sessionStorage.getItem("input");
+            stringClass = sessionStorage.getItem("class"); 
+            var cidr = sessionStorage.getItem("cidr");
+            var networkAddress = sessionStorage.getItem("networkAddress");
+            var wildcard = sessionStorage.getItem("wildcardDecimal");
+            var subnetMask = sessionStorage.getItem("subnetMask");
+            var boardcastAdress = sessionStorage.getItem("boardcastAdress");
+            var totalNumberOfHosts = sessionStorage.getItem("totalNumberOfHosts");
+            var binaryMaskString = sessionStorage.getItem("binaryMaskString");
+            var short = sessionStorage.getItem("short");
+            var binaryID = sessionStorage.getItem("binaryAddress");
+            var type = sessionStorage.getItem("type");
+            var integerID = sessionStorage.getItem("integerID");
+            var rangeUsable = sessionStorage.getItem("rangeUsable");
+            var hex = sessionStorage.getItem("hex");
+            textSummary = sessionStorage.getItem("textSummary");
+            rangePossible = sessionStorage.getItem("rangePossible"); //possible range 
+            rangePossible = parseInt(rangePossible);
+            increase = Math.ceil(255 / rangePossible); //increase
+            networkAddressSub = networkAddress.split("."); //network address split sub
+            boardcastAddressSub = boardcastAdress.split(".");
+
+            document.getElementById("ipaddress").innerHTML = output;
+            document.getElementById("classID").innerHTML = stringClass;
+            document.getElementById("cidrNotation").innerHTML = "/" + cidr;
+            document.getElementById("networkAddress").innerHTML = networkAddress;
+            document.getElementById("wildCard").innerHTML = wildcard;
+            document.getElementById("subnetMask").innerHTML = subnetMask;
+            document.getElementById("boardcastAdress").innerHTML = boardcastAdress;
+            document.getElementById("totalNumberOfHosts").innerHTML = totalNumberOfHosts;
+            document.getElementById("type").innerHTML = type;
+            document.getElementById("short").innerHTML = short;
+            document.getElementById("binaryID").innerHTML = binaryID;
+            document.getElementById("integerID").innerHTML = integerID;
+            document.getElementById("rangeUsable").innerHTML = rangeUsable;
+            document.getElementById("hex").innerHTML = hex;
+            document.getElementById("textSummary").innerHTML = textSummary;
+            if (totalNumberOfHosts - 2 <= 0) {
+                totalNumberOfHosts = 0;
+            } else {
+                totalNumberOfHosts -= 2;
+            }
+            document.getElementById("numberOfUsableHosts").innerHTML = totalNumberOfHosts;
+            document.getElementById("binaryMaskString").innerHTML = binaryMaskString;
+
+
+            genarateTable();
+
+        }
+        function genarateTable() {
+            var form_ = document.getElementById("form_");
+            var fs = document.createElement("fieldset");
+            fs.setAttribute("id", "fset");
+
+            if (textSummary != "") {
+
+                form_.appendChild(fs);
+                //genarate table
+                var table = document.createElement("TABLE");
+                table.setAttribute("id", "myTable");
+                document.body.appendChild(table);
+                var row = document.createElement("TR");
+                row.setAttribute("id", "myTr");
+                document.getElementById("myTable").appendChild(row);
+                //genarate head table
+                var columnNetworkAddress = document.createElement("TD");
+                columnNetworkAddress.setAttribute("width","150px")
+                var usableHostRange = document.createElement("TD");
+                usableHostRange.setAttribute("width","200px")
+                var broadcastAddress = document.createElement("TD");
+
+                var textNetworkAddress = document.createTextNode("Network Address");
+                var textUsableHostRange = document.createTextNode("Usable Host Range");
+                var textBroadcastAddress = document.createTextNode("Broadcast Address");
+
+                columnNetworkAddress.appendChild(textNetworkAddress);
+                usableHostRange.appendChild(textUsableHostRange);
+                broadcastAddress.appendChild(textBroadcastAddress);
+
+                document.getElementById("myTr").appendChild(columnNetworkAddress);
+                document.getElementById("myTr").appendChild(usableHostRange);
+                document.getElementById("myTr").appendChild(broadcastAddress);
+                var range = 0;
+                var rangeDiff = increase-1;
+
+                var subnetAddress = "";
+                var startUsableHostRange = "";
+                var endUsableHostRange = "";
+                var broadcastAddressTable = "";
+                for (let i = 0; i < rangePossible; i++) {
+                    //genarate row
+                    row = document.createElement("TR");
+                    row.setAttribute("id", "myTr" + i);
+                    document.getElementById("myTable").appendChild(row);
+
+                    //genarate column
+                    columnNetworkAddress = document.createElement("TD");
+                    usableHostRange = document.createElement("TD");
+                    broadcastAddress = document.createElement("TD");
+
+                    //genarate text
+                    if (stringClass == "A") {
+                        subnetAddress = networkAddressSub[0] + "." + range + "." + "0.0";
+                        startUsableHostRange = networkAddressSub[0] + "." + range + "." + "0.1 - "+networkAddressSub[0] +"."+ rangeDiff + ".255" + "." + "254";
+                        broadcastAddressTable = boardcastAddressSub[0] + "." + rangeDiff + ".255.255";
+                    } else if (stringClass == "B") {
+                        subnetAddress = networkAddressSub[0] + "." + networkAddressSub[1] + "." + range + ".0";
+                        startUsableHostRange = networkAddressSub[0] + "."+networkAddressSub[1]+"."+ range + "." + "1 - "+networkAddressSub[0] + "."+networkAddressSub[1] +"."+ rangeDiff + "." + "254";
+                        broadcastAddressTable = boardcastAddressSub[0]+"." +boardcastAddressSub[1]+ "." + rangeDiff + ".255"
+                    } else if (stringClass == "C") {
+                        subnetAddress = networkAddressSub[0] + "." + networkAddressSub[1] + "." + networkAddressSub[2] + "." + range;
+                        startUsableHostRange = networkAddressSub[0] + "."+networkAddressSub[1]+ "."+networkAddressSub[2] +"."+ range  + " - "+networkAddressSub[0] + "."+networkAddressSub[1] + "."+networkAddressSub[2] +"."+ (rangeDiff-1);
+                        broadcastAddressTable = boardcastAddressSub[0]+"." +boardcastAddressSub[1]+ "." +boardcastAddressSub[2]+"." +rangeDiff;
+                    }
+                    range += increase;
+                    rangeDiff = range + increase - 1;
+
+                    textNetworkAddress = document.createTextNode(subnetAddress);
+                    textUsableHostRange = document.createTextNode(startUsableHostRange);
+                    textBroadcastAddress = document.createTextNode(broadcastAddressTable);
+
+                    //add text to column
+                    columnNetworkAddress.appendChild(textNetworkAddress);
+                    usableHostRange.appendChild(textUsableHostRange);
+                    broadcastAddress.appendChild(textBroadcastAddress);
+
+                    //column text to table
+                    document.getElementById("myTr" + i).appendChild(columnNetworkAddress);
+                    document.getElementById("myTr" + i).appendChild(usableHostRange);
+                    document.getElementById("myTr" + i).appendChild(broadcastAddress);
+                }
+                var fieldSet = document.getElementById("fset");
+                fieldSet.appendChild(table);
+            }
+
+        }
+    </script>
+</head>
+<body onload="cal()">
+
+    <div id="clear"></div>
+    <div id="contentout">
+        <div id="content">
+            <h1 id="arthit">IP Subnet Calculator</h1>
+            <p style="font-size: 20px; color: rgb(0, 0, 0);">This calculator returns a variety of information regarding Internet Protocol version 4 (IPv4) and IPv6
+                subnets including possible network addresses, usable host ranges, subnet mask, and IP class, among
+                others.</p>
+
+            <h2>IPv4 Subnet Calculator</h2>
+            <h2 class="h2result" style="color:rgb(7, 7, 7);">Result</h2>
+            <h2>------------------------------------------------------------------------</h2>
+            <table class="cinfoT">
+                <tr id="tg">
+                    <td>IP Address:</td>
+                    <td id="ipaddress"></td>
+                </tr>
+                <tr id="tw">
+                    <td>Network Address:</td>
+                    <td id="networkAddress"></td>
+                </tr>
+                <tr id="tg">
+                    <td>Usable Host IP Range:</td>
+                    <td id="rangeUsable"></td>
+                </tr>
+                <tr id="tw">
+                    <td>Broadcast Address:</td>
+                    <td id="boardcastAdress"></td>
+                </tr>
+                <tr id="tg">
+                    <td>Total Number of Hosts:</td>
+                    <td id="totalNumberOfHosts"></td>
+                </tr>
+                <tr id="tw">
+                    <td>Number of Usable Hosts:</td>
+                    <td id="numberOfUsableHosts"></td>
+                </tr>
+                <tr id="tg">
+                    <td>Subnet Mask:</td>
+                    <td id="subnetMask"></td>
+                </tr>
+                <tr id="tw">
+                    <td>Wildcard Mask:</td>
+                    <td id="wildCard"></td>
+                </tr>
+                <tr id="tg">
+                    <td>Binary Subnet Mask:</td>
+                    <td id="binaryMaskString"></td>
+                </tr>
+                <tr id="tw">
+                    <td>IP Class:</td>
+                    <td id="classID"></td>
+                </tr>
+                <tr id="tg">
+                    <td>CIDR Notation:</td>
+                    <td id="cidrNotation"></td>
+                </tr>
+                <tr id="tw">
+                    <td>IP Type:</td>
+                    <td id="type"></td>
+                </tr>
+                <tr>
+                    <td colspan="2" id="tg">&nbsp;</td>
+                </tr>
+                <tr id="tw">
+                    <td>Short:</td>
+                    <td id="short"></td>
+                </tr>
+                <tr id="tg">
+                    <td>Binary ID:</td>
+                    <td id="binaryID"></td>
+                </tr>
+                <tr id="tw">
+                    <td>Integer ID:</td>
+                    <td id="integerID"></td>
+                </tr>
+                <tr id="tg">
+                    <td>Hex ID:</td>
+                    <td id="hex"></td>
+                </tr>
+
+            </table>
+            <input type="submit" id="btnBack" value="Back" onclick="goBack()" style="font-size: 20px;">
+            <h3 id="textSummary"></h3>
+
+            <div style="padding:10px 0px;text-align:center;">
+            </div>
+
+            <form action="#" id="form_" style="border: 0px;">
+            </form>
+            
+
+            <a name="ipv6"></a>
+            <br>
+            </table>
+
+            <script>
+                csubnet = '30'
+                function setSubnetV(inval) {
+                    csubnet = inval;
+                    return false;
+                }
+
+                function popSubnet(inval) {
+                    var lowerlimit = 0;
+                    if (inval == 'a') lowerlimit = 8;
+                    if (inval == 'b') lowerlimit = 16;
+                    if (inval == 'c') lowerlimit = 24;
+
+                    var allSubnets = [[32, '255.255.255.255 /32'], [31, '255.255.255.254 /31'], [30, '255.255.255.252 /30'], [29, '255.255.255.248 /29'], [28, '255.255.255.240 /28'], [27, '255.255.255.224 /27'], [26, '255.255.255.192 /26'], [25, '255.255.255.128 /25'], [24, '255.255.255.0 /24'], [23, '255.255.254.0 /23'], [22, '255.255.252.0 /22'], [21, '255.255.248.0 /21'], [20, '255.255.240.0 /20'], [19, '255.255.224.0 /19'], [18, '255.255.192.0 /18'], [17, '255.255.128.0 /17'], [16, '255.255.0.0 /16'], [15, '255.254.0.0 /15'], [14, '255.252.0.0 /14'], [13, '255.248.0.0 /13'], [12, '255.240.0.0 /12'], [11, '255.224.0.0 /11'], [10, '255.192.0.0 /10'], [9, '255.128.0.0 /9'], [8, '255.0.0.0 /8'], [7, '254.0.0.0 /7'], [6, '252.0.0.0 /6'], [5, '248.0.0.0 /5'], [4, '240.0.0.0 /4'], [3, '224.0.0.0 /3'], [2, '192.0.0.0 /2'], [1, '128.0.0.0 /1']];
+                    var thisSelect = document.getElementById('csubnet');
+                    thisSelect.options.length = 0;
+                    for (i = 0; i < allSubnets.length; i++) {
+                        if (allSubnets[i][0] >= lowerlimit) {
+                            var thisOption = document.createElement('option');
+                            thisOption.value = allSubnets[i][0];
+                            thisOption.innerHTML = allSubnets[i][1];
+                            if (csubnet == allSubnets[i][0]) thisOption.selected = true;
+                            thisSelect.appendChild(thisOption);
+                        }
+                    }
+                }
+                popSubnet('b');
+            </script>
+
+        </div>
+        <div id="right">
+            <div style="padding-top:10px;  min-height:280px; text-align:center;">
+                <script async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
+                <script>
+                    window.googletag = window.googletag || { cmd: [] };
+                    googletag.cmd.push(function () {
+                        googletag.defineSlot('/1057446/Calculator-Top-Right-Desktop', [[300, 250], [336, 280]], 'div-gpt-ad-1589567013929-0').addService(googletag.pubads());
+                        googletag.pubads().enableSingleRequest();
+                        googletag.enableServices();
+                    });
+                </script>
+                <div id='div-gpt-ad-1589567013929-0'>
+                    <script>
+                        googletag.cmd.push(function () { googletag.display('div-gpt-ad-1589567013929-0'); });
+                    </script>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div id="clear"></div>
+
+    <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-3068863-11']);
+        _gaq.push(['_trackPageview', '/ip-subnet-calculator.html?cclass=b&csubnet=30&cip=192.168.1.1&ctype=ipv4&printit=0&x=68&y=12_____Section_4_TH__do']);
+        (function () {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+    </script>
+
+    <script>
+        function goBack() {
+            window.open("main.html");
+            window.close();
+        }
+    </script>
+
+</body>
+
+</html>

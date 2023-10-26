@@ -2,27 +2,317 @@
 <html>
 
 <head>
-    <link rel="stylesheet" type="text/css" href="styles.css">
+
+    <script>
+        var networkSplit = [];
+        function clearInfo() {
+            var x = document.getElementById("ip").value = " ";
+            const btnA = document.getElementById("btnA");
+            const btnB = document.getElementById("btnB");
+            const btnC = document.getElementById("btnC");
+            btnA.checked = false;
+            btnB.checked = false;
+            btnC.checked = false; getIpAddress();
+
+        }
+        // get current ip address
+        function getIpAddress() {
+            fetch('https://api.ipify.org').then(response => response.text()).then(data => {
+                const userIP = data;
+                document.getElementById("ip").value = data;
+
+            });
+        }
+
+        function process() {
+
+            var mask = [[32, "255.255.255.255"], [31, '255.255.255.254'], [30, '255.255.255.252'], [29, '255.255.255.248'], [28, '255.255.255.240'], [27, '255.255.255.224'], [26, '255.255.255.192'], [25, '255.255.255.128'], [24, '255.255.255.0'], [23, '255.255.254.0'], [22, '255.255.252.0'], [21, '255.255.248.0'], [20, '255.255.240.0'], [19, '255.255.224.0'], [18, '255.255.192.0'], [17, '255.255.128.0'], [16, '255.255.0.0'], [15, '255.254.0.0'], [14, '255.252.0.0'], [13, '255.248.0.0'], [12, '255.240.0.0'], [11, '255.224.0.0'], [10, '255.192.0.0'], [9, '255.128.0.0'], [8, '255.0.0.0']];
+            const ipAddress = document.getElementById("ip");
+            const btnA = document.getElementById("btnA");
+            const btnB = document.getElementById("btnB");
+            const btnC = document.getElementById("btnC");
+            const cidr = document.getElementById("csubnet");
+            var octed = mask[cidr.selectedIndex][1].split(".");
+            const ipAddressSplit = document.getElementById("ip").value.split(".");
+            var binaryMask = [];
+            var binaryMaskString = "";
+            var wildCard = [];
+            var wildcardDecimal = "";
+            var binaryAddress = [];
+            var rangePossible = 0; // range possible
+            var boardcastAdress = ""; // boardcastAdress string
+            var binaryAddressString = ""; //ip address String
+            var networkAddressDecimal = ""; //Network Address
+            var StartIpAddressDecimal = ""; // start range network address
+            var endIpAddressDecimal = ""; // end range network address
+            var cidrNotation = mask[cidr.selectedIndex][0];
+            var classIP = "";
+            var type = "";
+            var textSummary = ""
+            convertBinary();
+            calNetworkAddress();
+            wildCardConvertToBinary();
+            calwildcardDecimal();
+            calBoardcastAdress();
+            maskToBinary();
+            checkType();
+            convertAddressToBinaryString();
+            networkSplit = networkAddressDecimal.split("."); //network address split
+            var boardcastAdressSplit = boardcastAdress.split("."); // boardcast adress split 
+            StartIpAddressDecimal = networkSplit[0] + "." + networkSplit[1] + "." + networkSplit[2] + "." + (parseInt(networkSplit[3]) + 1);
+            endIpAddressDecimal = boardcastAdressSplit[0] + "." + boardcastAdressSplit[1] + "." + boardcastAdressSplit[2] + "." + (parseInt(boardcastAdressSplit[3]) - 1);
+            var integerID = parseInt(binaryAddressString, 2);
+            var rangeUsable = StartIpAddressDecimal + " - " + endIpAddressDecimal;
+            checkRangeUsable();
+            checkClassIP();
+            checkAndPassParameter();
+
+            function convertAddressToBinaryString() {
+                for (let i = 0; i < binaryAddress.length; i++) {
+                    binaryAddressString += "" + binaryAddress[i];
+                }
+            }
+            function checkRangeUsable() {
+                if (networkAddressDecimal == boardcastAdress || StartIpAddressDecimal == boardcastAdress) {
+                    rangeUsable = "NA";
+                }
+            }
+            function checkType() {
+                if (ipAddressSplit[0] == "10" || (ipAddressSplit[0] == "172") || (ipAddressSplit[0] == "192" && ipAddressSplit[1] == "168")) {
+                    var start = 16;
+                    var end = 31;
+                    if (ipAddressSplit[0] == "172") {
+                        if (parseInt(ipAddressSplit[1]) >= 16 && parseInt(ipAddressSplit[1]) <= 31) {
+                            type = "Private";
+                        } else {
+                            type = "Public";
+                        }
+                    } else {
+                        type = "Private";
+                    }
+
+                } else {
+                    type = "Public";
+                }
+            }
+
+            function maskToBinary() {
+                for (let i = 0; i < binaryMask.length; i++) {
+                    if (i != binaryMask.length - 1) {
+                        binaryMaskString += "" + binaryMask[i] + ".";
+                    } else {
+                        binaryMaskString += "" + binaryMask[i];
+                    }
+                }
+            }
+            function calwildcardDecimal() {
+                for (let i = 0; i < wildCard.length; i++) {
+                    let temp = "";
+                    for (let j = 0; j < wildCard[i].length; j++) {
+                        temp = temp + wildCard[i][j];
+                    }
+                    if (i != wildCard.length - 1) {
+                        wildcardDecimal = "" + wildcardDecimal + parseInt(parseInt(temp), 2) + ".";
+                    } else {
+                        wildcardDecimal = "" + wildcardDecimal + parseInt(parseInt(temp), 2);
+                    }
+                }
+            }
+            function calBoardcastAdress() {
+                for (let i = 0; i < binaryAddress.length; i++) {
+                    let temp = "";
+                    for (let j = 0; j < binaryAddress[i].length; j++) {
+                        temp += parseInt(binaryAddress[i][j]) | parseInt(wildCard[i][j]);
+                    }
+                    if (i != binaryAddress.length - 1) {
+                        boardcastAdress = "" + boardcastAdress + parseInt(temp, 2) + ".";
+                    } else {
+                        boardcastAdress = "" + boardcastAdress + parseInt(temp, 2);
+                    }
+                }
+            }
+
+            function wildCardConvertToBinary() {
+                for (let i = 0; i < binaryMask.length; i++) {
+                    let temp = "";
+                    for (let j = 0; j < binaryMask[i].length; j++) {
+                        if (binaryMask[i][j] == "1") {
+                            temp += "0";
+                        } else {
+                            temp += "1";
+                        }
+                        wildCard[i] = temp;
+
+                    }
+                }
+            }
+
+
+            function checkClassIP() {
+
+                if (cidrNotation >= 0 && cidrNotation <= 15) {
+                    classIP = "A";
+                    textSummary = "All " + (Math.pow(2, mask[cidr.selectedIndex][0] - 8)) + " of the Possible " + "/" + mask[cidr.selectedIndex][0] + " Networks for";
+                    textSummary += " " + networkSplit[0] + ".*.*.*";
+                    rangePossible = Math.pow(2, mask[cidr.selectedIndex][0] - 8);
+                }
+                else if (cidrNotation > 15 && cidrNotation < 24) {
+                    classIP = "B";
+                    textSummary = "All " + (Math.pow(2, mask[cidr.selectedIndex][0] - 16)) + " of the Possible " + "/" + mask[cidr.selectedIndex][0] + " Networks for";
+                    textSummary += " " + networkSplit[0] + "." + networkSplit[1] + ".*.*";
+                    rangePossible = Math.pow(2, mask[cidr.selectedIndex][0] - 16);
+                }
+                else if (cidrNotation >= 24 && cidrNotation <= 32) {
+                    classIP = "C";
+                    textSummary = "All " + (Math.pow(2, mask[cidr.selectedIndex][0] - 24)) + " of the Possible " + "/" + mask[cidr.selectedIndex][0] + " Networks for";
+                    textSummary += " " + networkSplit[0] + "." + networkSplit[1] + "." + networkSplit[2] + ".*";
+                    rangePossible = Math.pow(2, mask[cidr.selectedIndex][0] - 24);
+                } if (rangeUsable == "NA" || rangePossible <= 1) {
+                    textSummary = "";
+
+                }
+            }
+
+            function calNetworkAddress() {
+                for (let i = 0; i < binaryMask.length; i++) {
+                    let temp = "";
+                    for (let j = 0; j < binaryMask[i].length; j++) {
+                        let ip = parseInt(binaryAddress[i][j]) & parseInt(binaryMask[i][j]);
+                        temp += ip;
+                    }
+                    if (i != binaryMask.length - 1) {
+                        networkAddressDecimal = "" + networkAddressDecimal + parseInt(temp, 2) + ".";
+                    } else {
+                        networkAddressDecimal = "" + networkAddressDecimal + parseInt(temp, 2);
+                    }
+                }
+            }
+
+            function convertBinary() {
+                for (let i = 0; i < octed.length; i++) {
+                    tempAddress = "";
+                    tempMask = "";
+                    tempMask = "" + (Number(parseInt(octed[i]).toString(2)));
+                    tempAddress = "" + (Number(parseInt(ipAddressSplit[i]).toString(2)));
+
+                    while (tempAddress.length < 8) {
+                        tempAddress = "0" + tempAddress;
+                    }
+                    binaryAddress[i] = tempAddress;
+
+                    while (tempMask.length < 8) {
+                        tempMask = "0" + tempMask;
+                    }
+                    binaryMask[i] = tempMask;
+                }
+            }
+
+            function checkAndPassParameter() {
+                var ipformat = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+                if (ipAddress.value == "") {
+                    alert("โปรดใส่ค่า IP Address");
+                } else if (!ipAddress.value.match(ipformat)) {
+                    alert("โปรดใส่ค่า IP Address ให้ถูกต้อง");
+                }
+                else {
+                    sessionStorage.setItem("input", ipAddress.value);
+                    sessionStorage.setItem("class", classIP);
+                    sessionStorage.setItem("cidr", cidr.value);
+                    sessionStorage.setItem("networkAddress", networkAddressDecimal);
+                    sessionStorage.setItem("wildcardDecimal", wildcardDecimal);
+                    sessionStorage.setItem("subnetMask", mask[cidr.selectedIndex][1]);
+                    sessionStorage.setItem("boardcastAdress", boardcastAdress);
+                    sessionStorage.setItem("totalNumberOfHosts", Math.pow(2, 32 - mask[cidr.selectedIndex][0]));
+                    sessionStorage.setItem("binaryMaskString", binaryMaskString);
+                    sessionStorage.setItem("type", type);
+                    sessionStorage.setItem("binaryAddress", binaryAddressString);
+                    sessionStorage.setItem("integerID", parseInt(binaryAddressString, 2));
+                    sessionStorage.setItem("rangeUsable", rangeUsable);
+                    sessionStorage.setItem("hex", "0x" + (integerID.toString(16)));
+                    sessionStorage.setItem("short", ipAddress.value + " /" + mask[cidr.selectedIndex][0]);
+                    sessionStorage.setItem("textSummary", textSummary);
+                    sessionStorage.setItem("rangePossible", rangePossible);
+                    window.open("cal.html");
+                    window.close("subnet.html");
+                }
+            }
+        }
+
+    </script>
+       <link rel="stylesheet" type="text/css" href="styles.css">
+    <title id="doc">IP Subnet Calculator</title>
 </head>
 
-<body>
+<body onload="getIpAddress()">
     <div>
-        <p style="font-size: 30px; color: white; background-color: rgb(62, 75, 63);">IP Subnet Calculator</p>
+        <p style="font-size: 30px; color: white; background-color: rgb(0, 0, 0);">IP Subnet Calculator</p>
+        <button class="tab-button" onclick="openTab('tab1')">Subnets</button>
+        <button class="tab-button" onclick="openTab('tab2')">About me</button>
     </div>
     <div class="tab-container">
-        <button class="tab-button" onclick="openTab('tab1')">Subnet Calculator</button>
-        <br>
+        
+
+        
         <div id="tab1" class="tab-content">
-            Content for Tab 1
-        </div>
-        <button class="tab-button" onclick="openTab('tab2')">Contact Us</button>
+            <form class="form" id="form" target="_self" action="#">
 
+
+                <fieldset>
+
+                    <table id="ipv4table" cellpadding="3">
+                        <tr>
+                            <td>Network Class</td>
+                            <td>
+                                <label for="cclass0" class="cbcontainer"></label> &nbsp; <label for="cclass1"
+                                    class="cbcontainer">
+                                    <input type="radio" name="cclass" id="btnA" value="a"
+                                        onclick="popSubnet('a');" /><span class="rbmark"></span>A</label> &nbsp; <label
+                                    for="cclass2" class="cbcontainer">
+                                    <input type="radio" name="cclass" id="btnB" value="b"
+                                        onclick="popSubnet('b');" /><span class="rbmark"></span>B</label> &nbsp;
+                                <label for="cclass3" class="cbcontainer">
+                                    <input type="radio" name="cclass" id="btnC" value="c"
+                                        onclick="popSubnet('c');" /><span class="rbmark"></span>C</label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Subnet</td>
+                            <td>
+                                <select name="csubnet" style="width: 200px; height: 25px; font-size: 1rem;" id="csubnet"
+                                    onChange="return setSubnetV(this.value);"></select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>IP Address</td>
+                            <td>
+                                <input type="text" id="ip" style="width: 192px; height: 20px; font-size: 1rem;" value=""
+                                    placeholder="Loading Your IP Address">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" align="center"><input type="hidden" name="ctype" id="ctype" value="ipv4">
+                                <input type="image" src="Calculate.png" onclick="process()" width="100px" height="30px">
+                                <input type="image" onclick="clearInfo()" src="clear.png" width="50px" height="30px">
+                        </tr>
+
+                    </table>
+                </fieldset>
+
+            </form>
+        </div>
         <div id="tab2" class="tab-content">
-            Content for Tab 2
+            <br>
+            <p style="font-size: 20px; color: white;">64160233@go.buu.ac.th<br>รหัสนิสิต:64160233<br>ชื่อ:นางสาวกุลิสรา ทองงามขำ<br>Sec : 2</p>
         </div>
-    </div>
+        
 
-    <script src="script.js"></script>
+        
+    
+
+    </div>
+    <script src="script.js"> </script>
+    </div>
+    </div>
 </body>
 
 </html>
