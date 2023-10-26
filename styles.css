@@ -1,0 +1,23 @@
+.tab-container {
+    display: flex;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    background-color: #ccc;
+    cursor: pointer;
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+    color: white;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+body {
+    background-color: rgb(0, 0, 0);
+}
